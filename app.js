@@ -1,6 +1,6 @@
 const express = require('express');
+
 const app = express();
-const fs = require('fs');
 const morgan = require('morgan');
 
 const tourRouter = require('./routes/tourRoutes');
@@ -11,7 +11,9 @@ const userRouter = require('./routes/userRoutes');
 //middlewares
 app.use(express.json());
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 app.use(express.static(`${__dirname}/public`));
 
