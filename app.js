@@ -1,6 +1,8 @@
 const express = require('express');
 
 const app = express();
+app.set('query parser', 'extended');
+
 const morgan = require('morgan');
 
 const tourRouter = require('./routes/tourRoutes');
