@@ -8,6 +8,7 @@ const toursSchema = new mongoose.Schema(
       required: [true, 'A toor must have a name'],
       unique: true,
     },
+    slug: String,
     duration: {
       type: Number,
       required: [true, 'A tour must have a duration'],
@@ -53,6 +54,10 @@ const toursSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -63,8 +68,23 @@ toursSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 //document middleware, runs before save () and create()
-toursSchema.pre('save', function () {
+toursSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
+  console.log(this);
+  next();
+});
+// toursSchema.pre('save', (next) => {
+//   console.log('sd');
+//   next();
+// });
+// toursSchema.post('save', (doc, next) => {
+//   console.log(doc);
+//   next();
+// });
+//query midleware
+toursSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  next();
 });
 
 const Tour = mongoose.model('Tour', toursSchema);
