@@ -70,7 +70,6 @@ toursSchema.virtual('durationWeeks').get(function () {
 //document middleware, runs before save () and create()
 toursSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
-  console.log(this);
   next();
 });
 // toursSchema.pre('save', (next) => {
@@ -84,9 +83,21 @@ toursSchema.pre('save', function (next) {
 //query midleware
 toursSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
   next();
 });
-
+// toursSchema.post(/^find/, function (docs, next) {
+//   console.log(`${Date.now() - this.start}`);
+//   console.log(docs);
+//   next();
+// });
+//aggregation middleware
+toursSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({
+    $match: { secretTour: { $ne: true } },
+  });
+  next();
+});
 const Tour = mongoose.model('Tour', toursSchema);
 
 module.exports = Tour;
