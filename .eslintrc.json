@@ -6,6 +6,8 @@
     "spaced-comment": "off",
     "no-console": "warn",
     "consistent-return": "off",
+    "prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
+
     "func-names": "off",
     "object-shorthand": "off",
     "no-process-exit": "off",
