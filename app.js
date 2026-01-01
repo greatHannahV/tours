@@ -1,7 +1,12 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const sanitizeHtml = require('sanitize-html');
+const hpp = require('hpp');
 
 const app = express();
-app.set('query parser', 'extended');
+// app.set('query parser', 'extended');
 
 const morgan = require('morgan');
 const AppError = require('./utils/appError');
@@ -12,7 +17,61 @@ const userRouter = require('./routes/userRoutes');
 //express.json() is middleware it can modidy incomig data
 
 //middlewares
-app.use(express.json());
+//security http headers
+app.use(helmet());
+
+//reading data from body into req.body
+app.use(express.json({ limit: '10kb' }));
+
+//data sanitisation against noSQL query injection
+// app.use(mongoSanitize());
+// Prevent NoSQL injection
+app.use((req, res, next) => {
+  const sanitize = (obj) => {
+    if (obj && typeof obj === 'object') {
+      Object.keys(obj).forEach((key) => {
+        const sanitizedKey = key.replace(/\$/g, '').replace(/\./g, '');
+        if (sanitizedKey !== key) {
+          obj[sanitizedKey] = obj[key];
+          delete obj[key];
+        }
+
+        if (typeof obj[sanitizedKey] === 'object') {
+          sanitize(obj[sanitizedKey]);
+        }
+      });
+    }
+  };
+
+  sanitize(req.body);
+  sanitize(req.params);
+  // req.query is read-only in Express 5.x, libreries were abandoned
+
+  next();
+});
+
+// againts XSS
+// app.use(xss());
+app.use((req, res, next) => {
+  if (req.body && req.body.comment) {
+    req.body.comment = sanitizeHtml(req.body.comment);
+  }
+  next();
+});
+
+// prevent parameter pollution
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'difficulty',
+      'maxGroupSize',
+      'price',
+    ],
+  }),
+);
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -22,9 +81,18 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  
+
   next();
 });
+
+//limit requests
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in 1 hour!',
+});
+
+app.use('/api', limiter);
 
 //route handlers
 
@@ -54,6 +122,7 @@ app.all(/.*/, (req, res, next) => {
 
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
+
 app.use(globalErrorHandler);
 //start server
 module.exports = app;
