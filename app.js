@@ -1,7 +1,6 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
 const sanitizeHtml = require('sanitize-html');
 const hpp = require('hpp');
 
@@ -13,6 +12,7 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewsRouter = require('./routes/reviewsRoutes');
 //express does not send body data to the request for that we need middleware
 //express.json() is middleware it can modidy incomig data
 
@@ -107,6 +107,7 @@ app.use('/api', limiter);
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewsRouter);
 
 app.all(/.*/, (req, res, next) => {
   // res.status(404).json({
