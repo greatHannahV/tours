@@ -3,9 +3,11 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const sanitizeHtml = require('sanitize-html');
 const hpp = require('hpp');
+const path = require('path');
 
 const app = express();
 // app.set('query parser', 'extended');
+const cookieParser = require('cookie-parser');
 
 const morgan = require('morgan');
 const AppError = require('./utils/appError');
@@ -13,13 +15,36 @@ const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewsRouter = require('./routes/reviewsRoutes');
+const viewRouter = require('./routes/viewRoutes');
 //express does not send body data to the request for that we need middleware
-//express.json() is middleware it can modidy incomig data
-
+//express.json() is middleware it can modidy incomig data\
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 //middlewares
 //security http headers
-app.use(helmet());
-
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        scriptSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://cdn.jsdelivr.net',
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://api.mapbox.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.mapbox.com'],
+        connectSrc: ["'self'", 'https://*.mapbox.com'],
+        workerSrc: ["'self'", 'blob:'],
+      },
+    },
+  }),
+);
+app.use(cookieParser());
+app.use((req, res, next) => {
+  console.log(req.cookies);
+  next();
+});
 //reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
 
@@ -77,8 +102,6 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-app.use(express.static(`${__dirname}/public`));
-
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
 
@@ -108,6 +131,7 @@ app.use('/api', limiter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewsRouter);
+app.use('/', viewRouter);
 
 app.all(/.*/, (req, res, next) => {
   // res.status(404).json({

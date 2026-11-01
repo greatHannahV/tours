@@ -10,6 +10,10 @@ process.on('uncaughtException', (err) => {
 });
 
 dotenv.config({
+  path: './config.env.local',
+});
+
+dotenv.config({
   path: './config.env',
 });
 
