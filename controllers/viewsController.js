@@ -31,3 +31,10 @@ exports.getLoginForm = catchAsync(async (req, res, next) => {
     title: 'Log into your account',
   });
 });
+
+exports.getAccount=catchAsync(async (req, res, next) => {
+  res.status(200).render('account', {
+    title: 'Your account',
+    user: req.user,
+  });
+});

@@ -66,6 +66,7 @@ module.exports = (err, req, res, next) => {
     sendErrorDev(err, req, res);
   } else {
     let error = Object.create(err);
+    error.message=err.message
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError')
@@ -73,6 +74,7 @@ module.exports = (err, req, res, next) => {
     if (error.name === 'JsonWebTokenError') error = handleJWTError(error);
     if (error.name === 'TokenExpiredError')
       error = handleJWTExpiredError(error);
+
     sendErrorProd(error, req, res); // send
   }
 };
