@@ -8,10 +8,15 @@ const loginForm = document.querySelector('.form');
 const logoutBtn = document.querySelector('.nav__el--logout');
 console.log(logoutBtn, 'fff');
 
-if (mapBox && mapBox.dataset.mapboxToken) {
-  const locations = JSON.parse(mapBox.dataset.locations);
+if (mapBox) {
+  if (mapBox.dataset.mapboxToken) {
+    const locations = JSON.parse(mapBox.dataset.locations);
 
-  displayMap(locations, mapBox.dataset.mapboxToken);
+    displayMap(locations, mapBox.dataset.mapboxToken);
+  } else {
+    mapBox.textContent =
+      'Map is unavailable. Configure MAPBOX_ACCESS_TOKEN to enable it.';
+  }
 }
 if (loginForm) {
   document.querySelector('.form').addEventListener('submit', (e) => {
