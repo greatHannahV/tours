@@ -4,7 +4,7 @@ import { login, logout } from './login';
 import { displayMap } from './mapbox';
 
 const mapBox = document.getElementById('map');
-const loginForm = document.querySelector('.form');
+const loginForm = document.querySelector('.form--login');
 const logoutBtn = document.querySelector('.nav__el--logout');
 console.log(logoutBtn, 'fff');
 
@@ -31,4 +31,4 @@ if (loginForm) {
 
 if (logoutBtn) {
   logoutBtn.addEventListener('click', logout);
-} 
+}
