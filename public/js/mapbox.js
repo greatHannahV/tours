@@ -1,7 +1,5 @@
 /* eslint-disable*/
 
-
-
 export const displayMap = (locations, accessToken) => {
   const map = new mapboxgl.Map({
     accessToken,
